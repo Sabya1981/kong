@@ -50,6 +50,7 @@ local PREFIX_PATHS = {
   admin_acc_logs = {"logs", "admin_access.log"},
   nginx_conf = {"nginx.conf"},
   nginx_kong_conf = {"nginx-kong.conf"},
+  nginx_kong_stream_conf = {"nginx-kong-stream.conf"},
 
   kong_env = {".kong_env"},
 
@@ -80,6 +81,7 @@ local CONF_INFERENCES = {
   -- forced string inferences (or else are retrieved as numbers)
   proxy_listen = { typ = "array" },
   admin_listen = { typ = "array" },
+  stream_listen = { typ = "array" },
   origins = { typ = "array" },
   db_update_frequency = {  typ = "number"  },
   db_update_propagation = {  typ = "number"  },
@@ -859,6 +861,13 @@ local function load(path, custom_conf)
         break
       end
     end
+
+    conf.stream_listeners, err = parse_listeners(conf.stream_listen)
+    if err then
+      return nil, "stream_listen " .. err
+    end
+
+    setmetatable(conf.stream_listeners, _nop_tostring_mt)
 
     conf.admin_listeners, err = parse_listeners(conf.admin_listen)
     if err then
